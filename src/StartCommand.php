@@ -8,6 +8,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Finder\Finder;
 
+$selectedTemplate = null;
+$selectedUser = null;
 
 class StartCommand extends Command
 {
@@ -25,14 +27,27 @@ class StartCommand extends Command
 
     function sendMessage(InputInterface $input, OutputInterface $output): int
     {
-        // $output->writeln("What template?");
+        global $selectedTemplate;
+        global $selectedUser;
         listTemplates($input, $output);
 
         $helper = $this->getHelper('question');
 
         $question = new Question('What Template?');
         $selection = $helper->ask($input, $output, $question);
-        $output->writeln("You chose template: " . $selection);
+        $output->writeln("You chose template number: " . $selection);
+        selectTemplate($input, $output, $selection);
+        $output->writeln("You chose template: " . $selectedTemplate['message']);
+
+        $helper = $this->getHelper('question');
+        listUsers($input, $output);
+        $question = new Question('Which User? (Please enter full name)');
+        $userSelection = $helper->ask($input, $output, $question);
+        $output->writeln("You chose user: " . $userSelection);
+
+        selectUser($input, $output, $userSelection);
+        $output->writeln("You chose user: " . $selectedUser['name']);
+
 
         return Command::SUCCESS;
     }
@@ -143,6 +158,68 @@ class StartCommand extends Command
 
                 return Command::SUCCESS;
             }
+
+        function selectTemplate(InputInterface $input, OutputInterface $output, $choice): int
+        {
+            $finder = new Finder();
+            // find all files in the current directory
+            $finder->files()->in(__DIR__.'/data');
+            global $selectedTemplate;
+            // check if there are any search results
+            if ($finder->hasResults()) {
+                // $output->writeln("We found some files!");
+
+                foreach ($finder as $file) {
+                    $absoluteFilePath = $file->getRealPath();
+                    $fileNameWithExtension = $file->getRelativePathname();
+
+                    if ($fileNameWithExtension == "templates.json") {
+                        $contents = $file->getContents();
+                        $templatesArray = json_decode($contents, true);
+
+                        foreach ($templatesArray as $template) {
+                            if ($template['id'] == $choice) {
+                                $selectedTemplate = $template;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            return Command::SUCCESS;
+        }
+
+        function selectUser(InputInterface $input, OutputInterface $output, $choice): int
+        {
+            $finder = new Finder();
+            // find all files in the current directory
+            $finder->files()->in(__DIR__.'/data');
+            global $selectedUser;
+            // check if there are any search results
+            if ($finder->hasResults()) {
+                // $output->writeln("We found some files!");
+
+                foreach ($finder as $file) {
+                    $absoluteFilePath = $file->getRealPath();
+                    $fileNameWithExtension = $file->getRelativePathname();
+
+                    if ($fileNameWithExtension == "users.json") {
+                        $contents = $file->getContents();
+                        $usersArray = json_decode($contents, true);
+
+                        foreach ($usersArray as $user) {
+                            if ($user['name'] == $choice) {
+                                $selectedUser = $user;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            return Command::SUCCESS;
+        }
 
 
 
