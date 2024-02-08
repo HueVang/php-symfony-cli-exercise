@@ -8,9 +8,12 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Finder\Finder;
 
+
 $selectedTemplate = null;
 $selectedUser = null;
-
+$name = null;
+$userName = null;
+$displayName = null;
 class StartCommand extends Command
 {
     static $defaultName = 'echo:start';
@@ -25,10 +28,39 @@ class StartCommand extends Command
         $this->setDescription("Opens up the menu of options");
     }
 
+    function createMessage($user, $template, InputInterface $input, OutputInterface $output) {
+        $stringArray = explode(" ", $template['message']);
+        $modifiedStringArray = [];
+
+        foreach($stringArray as $string) {
+            switch ($string) {
+                case '{displayName}':
+                    array_push($modifiedStringArray, $user['displayName']);
+                    break;
+                case '{name}':
+                    array_push($modifiedStringArray, $user['name']);
+                    break;
+                case '{username}':
+                    array_push($modifiedStringArray, $user['username']);
+                    break;
+                default:
+                    array_push($modifiedStringArray, $string);
+                    break;
+            }
+        }
+        $finalMessage = implode(" ", $modifiedStringArray);
+
+        $output->writeln($finalMessage);
+        $output->writeln(SLACK_WEBHOOK_URL);
+    }
+
     function sendMessage(InputInterface $input, OutputInterface $output): int
     {
         global $selectedTemplate;
         global $selectedUser;
+        global $name;
+        global $userName;
+        global $displayName;
         listTemplates($input, $output);
 
         $helper = $this->getHelper('question');
@@ -48,9 +80,12 @@ class StartCommand extends Command
         selectUser($input, $output, $userSelection);
         $output->writeln("You chose user: " . $selectedUser['name']);
 
-
+        $output->writeln("You chose user: " . $selectedUser['name']);
+        $this->createMessage($selectedUser, $selectedTemplate, $input, $output);
         return Command::SUCCESS;
     }
+
+
 
     public function execute(InputInterface $input, OutputInterface $output): int
     {

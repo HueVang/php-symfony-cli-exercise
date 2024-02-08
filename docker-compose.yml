@@ -8,6 +8,8 @@ services:
     container_name: php-cli-exercise
     volumes:
       - ".:/application"
+    env_file:
+      - .env.local
     environment:
       XDEBUG_CONFIG: "remote_host=host.docker.internal"
       PHP_IDE_CONFIG: "serverName=php_cli_exercise"
