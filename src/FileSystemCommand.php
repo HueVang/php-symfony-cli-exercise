@@ -25,15 +25,18 @@ class FileSystemCommand extends Command
 
         // $nameAnswer = $helper->ask($input, $output, $question);
         $filesystem = new Filesystem();
-
-        $filesystem->appendToFile('messages.json', '[
+        //$answer = $filesystem->exists('messages3.json');
+        //$output->writeln('This is the answer: ' . __DIR__.'/data/messages3.json');
+        $filesystem->dumpFile(__DIR__.'/data/messages2.json', '[
   {
-    "id": 2,
+    "id": 4,
     "message": "Hello, World",
     "date": "Mon Jan 16 2023 17:39:43 GMT-0600 (CST)"
   }
-]
-', true);
+]');
+
+
+
         // the third argument tells whether the file should be locked when writing to it
 
         $output->writeln("Success!");
@@ -42,3 +45,4 @@ class FileSystemCommand extends Command
     }
 
 }
+
