@@ -280,6 +280,74 @@ class StartCommand extends Command
         return Command::SUCCESS;
     }
 
+    function addUser(InputInterface $input, OutputInterface $output): int
+    {
+
+        $helper = $this->getHelper('question');
+        $question = new Question("Add a user \n
+        Enter the user's name: ");
+
+        $userName = $helper->ask($input, $output, $question);
+        $output->writeln("This is your user's name: " . $userName);
+
+        $helper = $this->getHelper('question');
+        $question = new Question("\n 
+        Enter the user's ID: ");
+
+        $userID = $helper->ask($input, $output, $question);
+        $output->writeln("This is your user's IS: " . $userID);
+
+        $helper = $this->getHelper('question');
+        $question = new Question("\n 
+        Enter the user's username: ");
+
+        $userUsername = $helper->ask($input, $output, $question);
+        $output->writeln("This is your user's username: " . $userUsername);
+
+        $helper = $this->getHelper('question');
+        $question = new Question("\n 
+        Enter the user's display name: ");
+
+        $userDisplayName = $helper->ask($input, $output, $question);
+        $output->writeln("This is your user's display name: " . $userDisplayName);
+
+
+
+        $finder = new Finder();
+        // find all files in the current directory
+        $finder->files()->in(__DIR__.'/data');
+        $newArray = array(); // this is update template test stuff
+
+        // check if there are any search results
+        if ($finder->hasResults()) {
+            // $output->writeln("We found some files!");
+
+            foreach ($finder as $file) {
+                $absoluteFilePath = $file->getRealPath();
+                $fileNameWithExtension = $file->getRelativePathname();
+
+                if ($fileNameWithExtension == "users.json") {
+                    $contents = $file->getContents();
+                    $usersArray = json_decode($contents, true);
+                    $newUser = (object) [
+                        'name' => $userName,
+                        'userId' => $userID,
+                        'username' => $userUsername,
+                        'displayName' => $userDisplayName
+                    ];
+                    array_push($usersArray, $newUser);
+                    $output->writeln("This is the new templates array: " . json_encode($usersArray));
+                    $filesystem = new Filesystem();
+                    $filesystem->dumpFile(__DIR__.'/data/users.json', json_encode($usersArray));
+                }
+            }
+        }
+
+
+
+        return Command::SUCCESS;
+    }
+
 
     function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -564,9 +632,7 @@ class StartCommand extends Command
 
         switch ($selection) {
             case '1':
-               // $testObj = new StartCommand();
-                //$testObj
-                $this->sendMessage($input, $output);
+                $this->sendMessage($input, $output); // partially finished
             break;
             case '2':
                 listTemplates($input, $output);
@@ -584,6 +650,7 @@ class StartCommand extends Command
                 listUsers($input, $output);
             break;
             case '7':
+                $this->addUser($input, $output);
             break;
             case '8':
                 listMessages($input, $output);
