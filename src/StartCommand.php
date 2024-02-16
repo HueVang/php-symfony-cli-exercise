@@ -175,6 +175,57 @@ class StartCommand extends Command
         return Command::SUCCESS;
     }
 
+    function addTemplate(InputInterface $input, OutputInterface $output): int
+    {
+
+        $helper = $this->getHelper('question');
+        $question = new Question("Add a template \n \n 
+        Available variables \n 
+        * {name} \n
+        * {username}\n
+        * {displayName}\n
+        Enter your new template and press enter to save: \n");
+
+        $newTemplateMessage = $helper->ask($input, $output, $question);
+        $output->writeln("This is your new template message: " . $newTemplateMessage);
+
+
+        $finder = new Finder();
+        // find all files in the current directory
+        $finder->files()->in(__DIR__.'/data');
+        $newArray = array(); // this is update template test stuff
+
+        // check if there are any search results
+        if ($finder->hasResults()) {
+            // $output->writeln("We found some files!");
+
+            foreach ($finder as $file) {
+                $absoluteFilePath = $file->getRealPath();
+                $fileNameWithExtension = $file->getRelativePathname();
+
+                if ($fileNameWithExtension == "templates.json") {
+                    $contents = $file->getContents();
+                    $templatesArray = json_decode($contents, true);
+                    $lastElement = end($templatesArray);
+                    $newID = $lastElement['id'] + 1;
+                    echo 'This is the new id value ' . $newID . " \n";
+                    $newTemplate = (object) [
+                        'id' => $newID,
+                        'message' => $newTemplateMessage
+                    ];
+                    array_push($templatesArray, $newTemplate);
+                    $output->writeln("This is the new templates array: " . json_encode($templatesArray));
+                    $filesystem = new Filesystem();
+                    $filesystem->dumpFile(__DIR__.'/data/templates.json', json_encode($templatesArray));
+                }
+            }
+        }
+
+
+
+        return Command::SUCCESS;
+    }
+
     function deleteTemplate(InputInterface $input, OutputInterface $output): int
     {
         listTemplates($input, $output);
@@ -521,6 +572,7 @@ class StartCommand extends Command
                 listTemplates($input, $output);
             break;
             case '3':
+                $this->addTemplate($input, $output);
             break;
             case '4':
                 $this->updateTemplate($input, $output);
