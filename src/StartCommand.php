@@ -29,10 +29,7 @@ $displayName = null;
 class StartCommand extends Command
 {
     static $defaultName = 'echo:start';
-   // public function __construct(string $name = null)
-   // {
-   //     parent::__construct($name);
-   // }
+
 
 
     function configure(): void
@@ -44,30 +41,19 @@ class StartCommand extends Command
     {
         $finalMessage = str_replace(array("{username}", "{name}", "{displayName}"), array($user['username'],$user['name'], $user['displayName']), $template['message']);
         $output->writeln('This is the final message :' . $finalMessage);
-        //$output->writeln('This is the final message :' . $finalMessage);
         $webhook = getenv('SLACK_WEBHOOK_URL');
         $jsonPayload = '{"channel": "#accelerated-engineer-program", "username": "'. $user['username'] .'", "text": "'. $finalMessage .'", "icon_emoji": ":ghost:"}';
-        //$command = ['curl', '-X', 'POST', '-H', '\'Content-Type: application/json\'', '-d', '{"channel": "#accelerated-engineer-program", "username": "Patrick Star", "text": ' . $finalMessage . ', "icon_emoji": ":ghost:"}', $webhook];
         $command = ['curl', '-X', 'POST', '-H', '\'Content-Type: application/json\'', '-d', $jsonPayload, $webhook];
-        //$output->writeln('This is the jsonPayload :' . $jsonPayload);
 
-        // grabFileContents($input, $output, 'messages');
         writeFile($input, $output, 'messages', $finalMessage);
 
         $process = new Process($command);
+        $process->run();
 
-       // $process->run();
+        if (!$process->isSuccessful()) {
+            throw new ProcessFailedException($process);
+        }
 
-
-
-// executes after the command finishes
-        //if (!$process->isSuccessful()) {
-        //    throw new ProcessFailedException($process);
-        //}
-
-        //echo $process->getOutput();
-        //$output->writeln('This is the process: ');
-        //$output->writeln($process);
     }
 
 
@@ -117,13 +103,10 @@ class StartCommand extends Command
 
 
         $finder = new Finder();
-        // find all files in the current directory
         $finder->files()->in(__DIR__.'/data');
         $newArray = array(); // this is update template test stuff
 
-        // check if there are any search results
         if ($finder->hasResults()) {
-            // $output->writeln("We found some files!");
 
             foreach ($finder as $file) {
                 $absoluteFilePath = $file->getRealPath();
@@ -134,18 +117,16 @@ class StartCommand extends Command
                     $templatesArray = json_decode($contents, true);
 
                     foreach ($templatesArray as $template) {
-                        if ($template['id'] == $selection) { // this is update template test stuff
-                            $newTemplate = (object) [ // this is update template test stuff
-                                'id' => $selection, // this is update template test stuff
-                                'message' => $updatedTemplateMessage // this is update template test stuff
+                        if ($template['id'] == $selection) {
+                            $newTemplate = (object) [
+                                'id' => $selection,
+                                'message' => $updatedTemplateMessage
                             ];
-                           // $output->writeln('This hit the if conditional: ' . $template["message"]); // this is update template test stuff
-                            array_push($newArray, $newTemplate); // this is update template test stuff
+                            array_push($newArray, $newTemplate);
                         } else {
-                            array_push($newArray, $template); // this is update template test stuff
-                            $output->writeln('This hit the else conditional'); // this is update template test stuff
+                            array_push($newArray, $template);
+                            $output->writeln('This hit the else conditional');
                         }
-                        // $output->writeln($template["id"] . ": " . $template["message"]);
                         $output->writeln('This is the newArray: ' . json_encode($newArray));
                     }
                 }
@@ -174,13 +155,9 @@ class StartCommand extends Command
 
 
         $finder = new Finder();
-        // find all files in the current directory
         $finder->files()->in(__DIR__.'/data');
-        $newArray = array(); // this is update template test stuff
 
-        // check if there are any search results
         if ($finder->hasResults()) {
-            // $output->writeln("We found some files!");
 
             foreach ($finder as $file) {
                 $absoluteFilePath = $file->getRealPath();
@@ -225,13 +202,10 @@ class StartCommand extends Command
 
         if ($confirmation == strtolower('y')) {
             $finder = new Finder();
-            // find all files in the current directory
             $finder->files()->in(__DIR__.'/data');
             $newArray = array(); // this is update template test stuff
             $output->writeln('You are in the IF statement for y || Y');
-            // check if there are any search results
             if ($finder->hasResults()) {
-                // $output->writeln("We found some files!");
 
                 foreach ($finder as $file) {
                     $absoluteFilePath = $file->getRealPath();
@@ -242,13 +216,12 @@ class StartCommand extends Command
                         $templatesArray = json_decode($contents, true);
 
                         foreach ($templatesArray as $template) {
-                            if ($template['id'] == $selection) { // this is update template test stuff
-                                $output->writeln('This hit the if conditional for DELETE - we\'re deleting...'); // this is update template test stuff
+                            if ($template['id'] == $selection) {
+                                $output->writeln('This hit the if conditional for DELETE - we\'re deleting...');
                             } else {
-                                array_push($newArray, $template); // this is update template test stuff
-                                $output->writeln('This hit the else conditional for DELETE - we\'re pushing...'); // this is update template test stuff
+                                array_push($newArray, $template);
+                                $output->writeln('This hit the else conditional for DELETE - we\'re pushing...');
                             }
-                            // $output->writeln($template["id"] . ": " . $template["message"]);
                             $output->writeln('This is the newArray: ' . json_encode($newArray));
                         }
                     }
@@ -257,7 +230,6 @@ class StartCommand extends Command
                 $filesystem->dumpFile(__DIR__.'/data/templates.json', json_encode($newArray));
             }
         } else {
-            // execute(); <--- Testing this and it does not work as intended (call to undefined function)
             echo 'Okay, we won\'t delete any templates';
         }
 
@@ -298,13 +270,9 @@ class StartCommand extends Command
 
 
         $finder = new Finder();
-        // find all files in the current directory
         $finder->files()->in(__DIR__.'/data');
-        $newArray = array(); // this is update template test stuff
 
-        // check if there are any search results
         if ($finder->hasResults()) {
-            // $output->writeln("We found some files!");
 
             foreach ($finder as $file) {
                 $absoluteFilePath = $file->getRealPath();
@@ -343,13 +311,10 @@ class StartCommand extends Command
         function listMessages(InputInterface $input, OutputInterface $output): int
             {
                 $finder = new Finder();
-    // find all files in the current directory
                 $finder->files()->in(__DIR__.'/data');
                 $table = new Table ($output);
                 $table->setHeaders(['Date', 'Message']);
-    // check if there are any search results
                 if ($finder->hasResults()) {
-                    // $output->writeln("We found some files!");
 
                     foreach ($finder as $file) {
                         $absoluteFilePath = $file->getRealPath();
@@ -361,8 +326,6 @@ class StartCommand extends Command
 
                             foreach ($messagesArray as $message) {
                                 $table->setRows([[$message["date"], $message["message"]]]);
-                                //$table->setRows([[$message["message"]]]);
-                                //$output->writeln($message["id"] . ": " . $message["message"] . " " . $message["date"]);
                             }
 
                         }
@@ -376,12 +339,9 @@ class StartCommand extends Command
         function listUsers(InputInterface $input, OutputInterface $output): int
             {
                 $finder = new Finder();
-        // find all files in the current directory
                 $finder->files()->in(__DIR__.'/data');
 
-        // check if there are any search results
                 if ($finder->hasResults()) {
-                    // $output->writeln("We found some files!");
                     $table = new Table($output);
                     $table->setHeaders(['Name', 'User ID', 'Username', 'Display Name']);
                     foreach ($finder as $file) {
@@ -407,13 +367,10 @@ class StartCommand extends Command
         function listTemplates(InputInterface $input, OutputInterface $output): int
             {
                 $finder = new Finder();
-        // find all files in the current directory
                 $finder->files()->in(__DIR__.'/data');
-                $newArray = array(); // this is update template test stuff
+                $newArray = array();
 
-        // check if there are any search results
                 if ($finder->hasResults()) {
-                    // $output->writeln("We found some files!");
                     $table = new Table($output);
                     $table->setHeaders(['ID', 'Message']);
 
@@ -427,8 +384,6 @@ class StartCommand extends Command
 
                             foreach ($templatesArray as $template) {
                                 $table->addRows([[$template["id"], $template["message"]]]);
-
-                                // $output->writeln($template["id"] . ": " . $template["message"]);
                                 $output->writeln('This is the newArray: ' . json_encode($newArray));
                             }
                         }
@@ -448,12 +403,9 @@ class StartCommand extends Command
             global $messagesContents;
 
             $finder = new Finder();
-            // find all files in the current directory
             $finder->files()->in(__DIR__.'/data');
 
-            // check if there are any search results
             if ($finder->hasResults()) {
-                // $output->writeln("We found some files!");
 
                 foreach ($finder as $file) {
                     $absoluteFilePath = $file->getRealPath();
@@ -471,7 +423,6 @@ class StartCommand extends Command
                                 $output->writeln('This is the users contents: ' . json_encode($usersContents));
                                 break;
                             case 'messages2':
-                                //addMessage();
                                 $messagesContents = json_decode($contents, true);
                                 $output->writeln('This is the messages contents: ' . json_encode($messagesContents));
                                 break;
@@ -495,8 +446,6 @@ class StartCommand extends Command
             grabFileContents($input, $output, $fileName);
             $jsonFormattedContents = null;
             $filesystem = new Filesystem();
-            //$answer = $filesystem->exists('messages3.json');
-            //$output->writeln('This is the answer: ' . __DIR__.'/data/messages3.json')
 
             switch ($fileName) {
                 case 'templates':
@@ -511,10 +460,6 @@ class StartCommand extends Command
                     break;
                 case 'messages':
                     addMessage($input, $output, $messagesContents, $message);
-                    //$jsonFormattedContents = json_encode($messagesContents);
-                    //$filesystem->dumpFile(__DIR__.'/data/messages2.json', $jsonFormattedContents);
-                    //array_push($messagesContents, );
-                    //$output->writeln('This is the messages contents: ' . $jsonFormattedContents);
                     break;
                 default:
                     $output->writeln('Switch case did not match condition');
@@ -527,29 +472,20 @@ class StartCommand extends Command
             global $messagesContents;
             grabFileContents($input, $output, 'messages2');
             $messagesArray = $messagesContents;
-            //$currentDate = date(DATE_RFC2822);
             $currentDate = date_create("now", new \DateTimeZone("America/Chicago"));
             $datePlaceholder = date_format($currentDate, "D M d Y H:i:s TO (T)");
             $dateStringArray = explode(" ", $datePlaceholder);
-            // echo "THIS IS THE dateStringArray: -> " . json_encode($dateStringArray) . "\n";
             $dateStringArray[5] = "GMT-0600";
             $dateInCorrectFormat = implode(" " ,$dateStringArray);
-            //Mon Jan 16 2023 17:39:43 GMT-0600 (CST)
-            // echo "THIS IS THE dateStringArray AFTER MODIFICATION: -> " . implode(" " ,$dateStringArray) . "\n";
-            // echo "this is the messagesArray: -> " . json_encode($messagesArray) . "\n";
-            //array_push($arr, $message);
-            //$newArray = $arr;
 
             $lastElement = end($messagesArray);
             $newID = $lastElement['id'] + 1;
-           // echo 'This is the new message id value ' . $newID . " \n";
             $newMessage = (object) [
                 'id' => $newID,
                 'message' => $message,
                 'date' => $dateInCorrectFormat
             ];
 
-            //echo "THIS IS THE NEW MESSAGE OBJECT " . json_encode($newMessage) . "\n";
 
             array_push($messagesArray, $newMessage);
             echo "THIS IS THE ARRAY AFTER THE PUSH: -> " . json_encode($messagesArray) . "\n";
@@ -557,21 +493,14 @@ class StartCommand extends Command
             $filesystem->dumpFile(__DIR__.'/data/messages2.json', json_encode($messagesArray));
 
 
-           // echo "this is the message value: -> " . $message . "\n";
-            //echo "this is the DATE PLACEHOLDER: ->" . json_encode($datePlaceholder) . "\n";
-            //echo "this is the new array value: -> " . $newArray . "\n";
-            //echo "this is the newArray: -> " . json_encode($newArray);
         }
 
         function selectTemplate(InputInterface $input, OutputInterface $output, $choice): int
         {
             $finder = new Finder();
-            // find all files in the current directory
             $finder->files()->in(__DIR__.'/data');
             global $selectedTemplate;
-            // check if there are any search results
             if ($finder->hasResults()) {
-                // $output->writeln("We found some files!");
 
                 foreach ($finder as $file) {
                     $absoluteFilePath = $file->getRealPath();
@@ -597,12 +526,9 @@ class StartCommand extends Command
         function selectUser(InputInterface $input, OutputInterface $output, $choice): int
         {
             $finder = new Finder();
-            // find all files in the current directory
             $finder->files()->in(__DIR__.'/data');
             global $selectedUser;
-            // check if there are any search results
             if ($finder->hasResults()) {
-                // $output->writeln("We found some files!");
 
                 foreach ($finder as $file) {
                     $absoluteFilePath = $file->getRealPath();
@@ -647,7 +573,7 @@ class StartCommand extends Command
 
             switch ($selection) {
                 case '1':
-                    $this->sendMessage($input, $output); // partially finished - uncomment Slack post logic and double check add message
+                    $this->sendMessage($input, $output);
                     break;
                 case '2':
                     listTemplates($input, $output);
