@@ -40,7 +40,6 @@ class StartCommand extends Command
     function createMessage($user, $template, InputInterface $input, OutputInterface $output)
     {
         $finalMessage = str_replace(array("{username}", "{name}", "{displayName}"), array($user['username'],$user['name'], $user['displayName']), $template['message']);
-        $output->writeln('This is the final message :' . $finalMessage);
         $webhook = getenv('SLACK_WEBHOOK_URL');
         $jsonPayload = '{"channel": "#accelerated-engineer-program", "username": "'. $user['username'] .'", "text": "'. $finalMessage .'", "icon_emoji": ":ghost:"}';
         $command = ['curl', '-X', 'POST', '-H', '\'Content-Type: application/json\'', '-d', $jsonPayload, $webhook];
@@ -70,20 +69,15 @@ class StartCommand extends Command
 
         $question = new Question('What Template?');
         $selection = $helper->ask($input, $output, $question);
-        $output->writeln("You chose template number: " . $selection);
         selectTemplate($input, $output, $selection);
-        $output->writeln("You chose template: " . $selectedTemplate['message']);
 
         $helper = $this->getHelper('question');
         listUsers($input, $output);
         $question = new Question('Which User? (Please enter full name)');
         $userSelection = $helper->ask($input, $output, $question);
-        $output->writeln("You chose user: " . $userSelection);
 
         selectUser($input, $output, $userSelection);
-        $output->writeln("You chose user: " . $selectedUser['name']);
 
-        $output->writeln("You chose user: " . $selectedUser['name']);
         $this->createMessage($selectedUser, $selectedTemplate, $input, $output);
         return Command::SUCCESS;
     }
@@ -94,12 +88,11 @@ class StartCommand extends Command
         $helper = $this->getHelper('question');
         $question = new Question('What template do you want to update? ');
         $selection = $helper->ask($input, $output, $question);
-        $output->writeln("You chose template number: " . $selection);
+
 
         $helper = $this->getHelper('question');
         $question = new Question('Enter your updated template and press enter to save:');
         $updatedTemplateMessage = $helper->ask($input, $output, $question);
-        $output->writeln("This is the updated template message: " . $updatedTemplateMessage);
 
 
         $finder = new Finder();
@@ -125,9 +118,7 @@ class StartCommand extends Command
                             array_push($newArray, $newTemplate);
                         } else {
                             array_push($newArray, $template);
-                            $output->writeln('This hit the else conditional');
                         }
-                        $output->writeln('This is the newArray: ' . json_encode($newArray));
                     }
                 }
             }
@@ -151,7 +142,6 @@ class StartCommand extends Command
         Enter your new template and press enter to save: \n");
 
         $newTemplateMessage = $helper->ask($input, $output, $question);
-        $output->writeln("This is your new template message: " . $newTemplateMessage);
 
 
         $finder = new Finder();
@@ -168,13 +158,11 @@ class StartCommand extends Command
                     $templatesArray = json_decode($contents, true);
                     $lastElement = end($templatesArray);
                     $newID = $lastElement['id'] + 1;
-                    echo 'This is the new id value ' . $newID . " \n";
                     $newTemplate = (object) [
                         'id' => $newID,
                         'message' => $newTemplateMessage
                     ];
                     array_push($templatesArray, $newTemplate);
-                    $output->writeln("This is the new templates array: " . json_encode($templatesArray));
                     $filesystem = new Filesystem();
                     $filesystem->dumpFile(__DIR__.'/data/templates.json', json_encode($templatesArray));
                 }
@@ -192,19 +180,16 @@ class StartCommand extends Command
         $helper = $this->getHelper('question');
         $question = new Question('What template do you want to delete? ');
         $selection = $helper->ask($input, $output, $question);
-        $output->writeln("You chose template number: " . $selection);
 
 
         $helper = $this->getHelper('question');
         $question = new Question('Are you sure? (y/n)');
         $confirmation = $helper->ask($input, $output, $question);
-        $output->writeln("This is the confirmation: " . $confirmation);
 
         if ($confirmation == strtolower('y')) {
             $finder = new Finder();
             $finder->files()->in(__DIR__.'/data');
             $newArray = array(); // this is update template test stuff
-            $output->writeln('You are in the IF statement for y || Y');
             if ($finder->hasResults()) {
 
                 foreach ($finder as $file) {
@@ -217,20 +202,15 @@ class StartCommand extends Command
 
                         foreach ($templatesArray as $template) {
                             if ($template['id'] == $selection) {
-                                $output->writeln('This hit the if conditional for DELETE - we\'re deleting...');
                             } else {
                                 array_push($newArray, $template);
-                                $output->writeln('This hit the else conditional for DELETE - we\'re pushing...');
                             }
-                            $output->writeln('This is the newArray: ' . json_encode($newArray));
                         }
                     }
                 }
                 $filesystem = new Filesystem();
                 $filesystem->dumpFile(__DIR__.'/data/templates.json', json_encode($newArray));
             }
-        } else {
-            echo 'Okay, we won\'t delete any templates';
         }
 
         return Command::SUCCESS;
@@ -244,28 +224,24 @@ class StartCommand extends Command
         Enter the user's name: ");
 
         $userName = $helper->ask($input, $output, $question);
-        $output->writeln("This is your user's name: " . $userName);
 
         $helper = $this->getHelper('question');
         $question = new Question("\n 
         Enter the user's ID: ");
 
         $userID = $helper->ask($input, $output, $question);
-        $output->writeln("This is your user's IS: " . $userID);
 
         $helper = $this->getHelper('question');
         $question = new Question("\n 
         Enter the user's username: ");
 
         $userUsername = $helper->ask($input, $output, $question);
-        $output->writeln("This is your user's username: " . $userUsername);
 
         $helper = $this->getHelper('question');
         $question = new Question("\n 
         Enter the user's display name: ");
 
         $userDisplayName = $helper->ask($input, $output, $question);
-        $output->writeln("This is your user's display name: " . $userDisplayName);
 
 
 
@@ -288,7 +264,6 @@ class StartCommand extends Command
                         'displayName' => $userDisplayName
                     ];
                     array_push($usersArray, $newUser);
-                    $output->writeln("This is the new templates array: " . json_encode($usersArray));
                     $filesystem = new Filesystem();
                     $filesystem->dumpFile(__DIR__.'/data/users.json', json_encode($usersArray));
                 }
@@ -353,7 +328,6 @@ class StartCommand extends Command
                             $usersArray = json_decode($contents, true);
 
                             foreach ($usersArray as $user) {
-                                $output->writeln($user["name"]);
                                 $table->addRows([[$user["name"], $user["userId"], $user["username"], $user["displayName"]]]);
                             }
                         }
@@ -384,7 +358,6 @@ class StartCommand extends Command
 
                             foreach ($templatesArray as $template) {
                                 $table->addRows([[$template["id"], $template["message"]]]);
-                                $output->writeln('This is the newArray: ' . json_encode($newArray));
                             }
                         }
                     }
@@ -416,18 +389,14 @@ class StartCommand extends Command
                         switch ($fileName) {
                             case 'templates':
                                 $templatesContents = json_decode($contents, true);
-                                $output->writeln('This is the template contents: ' . json_encode($templatesContents));
                                 break;
                             case 'users':
                                 $usersContents = json_decode($contents, true);
-                                $output->writeln('This is the users contents: ' . json_encode($usersContents));
                                 break;
                             case 'messages2':
                                 $messagesContents = json_decode($contents, true);
-                                $output->writeln('This is the messages contents: ' . json_encode($messagesContents));
                                 break;
                             default:
-                                $output->writeln('Switch case did not match condition');
                                 break;
                         }
                     }
@@ -451,18 +420,15 @@ class StartCommand extends Command
                 case 'templates':
                     $jsonFormattedContents = json_encode($usersContents);
                     $filesystem->dumpFile(__DIR__.'/data/messages2.json', $jsonFormattedContents);
-                    $output->writeln('This is the template contents: ' . $jsonFormattedContents);
                     break;
                 case 'users':
                     $jsonFormattedContents = json_encode($templatesContents);
                     $filesystem->dumpFile(__DIR__.'/data/messages2.json', $jsonFormattedContents);
-                    $output->writeln('This is the users contents: ' . $jsonFormattedContents);
                     break;
                 case 'messages':
                     addMessage($input, $output, $messagesContents, $message);
                     break;
                 default:
-                    $output->writeln('Switch case did not match condition');
                     break;
             }
 
@@ -488,7 +454,6 @@ class StartCommand extends Command
 
 
             array_push($messagesArray, $newMessage);
-            echo "THIS IS THE ARRAY AFTER THE PUSH: -> " . json_encode($messagesArray) . "\n";
             $filesystem = new Filesystem();
             $filesystem->dumpFile(__DIR__.'/data/messages2.json', json_encode($messagesArray));
 
